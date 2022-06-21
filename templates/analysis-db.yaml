@@ -4,7 +4,7 @@ Transform: AWS::Serverless-2016-10-31
 
 
 Parameters:
-  PredictionBucket:
+  PredictionBucketName:
     Type: String
 
 Resources:
@@ -27,7 +27,7 @@ Resources:
           InputFormat: org.apache.hadoop.mapred.TextInputFormat
           NumberOfBuckets: -1
           OutputFormat: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-          Location: !Sub s3://${PredictionBucket}/sentiment/
+          Location: !Sub s3://${PredictionBucketName}/sentiment/
           SerdeInfo:
             SerializationLibrary: org.openx.data.jsonserde.JsonSerDe
           Columns:
@@ -59,7 +59,7 @@ Resources:
           InputFormat: org.apache.hadoop.mapred.TextInputFormat
           NumberOfBuckets: -1
           OutputFormat: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-          Location: !Sub s3://${PredictionBucket}/ner/
+          Location: !Sub s3://${PredictionBucketName}/ner/
           SerdeInfo:
             SerializationLibrary: org.openx.data.jsonserde.JsonSerDe
           Columns:
@@ -87,7 +87,7 @@ Resources:
           InputFormat: org.apache.hadoop.mapred.TextInputFormat
           NumberOfBuckets: -1
           OutputFormat: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-          Location: !Sub s3://${PredictionBucket}/tweets/
+          Location: !Sub s3://${PredictionBucketName}/tweets/
           SerdeInfo:
             SerializationLibrary: org.openx.data.jsonserde.JsonSerDe
           Columns:
