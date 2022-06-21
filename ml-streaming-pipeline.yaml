@@ -10,6 +10,20 @@ Description: >
     - S3: receives predictions
 
 Parameters:
+  TemplateBucket:
+    Type: String
+    Default: ml-streaming-pipeline
+    Description: >
+      Change this to ensure you have no name conflicts since S3 is global. The S3 bucket from which
+      Cloudformation will fetch the templates used by this stack. This needs to be the
+      same bucket name you used to send the templates to S3. This will also hold the Lambda code and
+      where the predictions will be sent.
+
+  PredictionBucketName:
+    Type: String
+    Default: ml-prediction-bucket-e07adba6-ae1c-43e4-8148-4ead73d60834
+    Description: Change this to ensure you have no name conflicts since S3 is global.
+
   TwitterConsumerKey:
     Type: String
 
@@ -25,14 +39,6 @@ Parameters:
   IngestStreamShardCount:
     Type: Number
     Default: 1
-
-  TemplateBucket:
-    Type: String
-    Default: ml-streaming-pipeline
-    Description: >
-      The S3 bucket from which Cloudformation will fetch the templates used by this stack. This needs to be the
-      same bucket name you used to send the templates to S3. This will also hold the Lambda code and
-      where the predictions will be sent.
 
   IngestionRepoName:
     Type: String
@@ -52,7 +58,7 @@ Resources:
     Properties:
       TemplateURL: !Sub "https://s3.amazonaws.com/${TemplateBucket}/templates/analysis-db.yaml"
       Parameters:
-        PredictionBucket: !GetAtt Storage.Outputs.PredictionBucket
+        PredictionBucketName: !Ref PredictionBucketName
 
   SecretsManager:
     Type: AWS::CloudFormation::Stack
@@ -96,3 +102,4 @@ Resources:
       Parameters:
         SecurityGroup: !GetAtt VPC.Outputs.SecurityGroup
         PrivateSubnet: !GetAtt VPC.Outputs.PrivateSubnet
+        PredictionBucketName: !Ref PredictionBucketName

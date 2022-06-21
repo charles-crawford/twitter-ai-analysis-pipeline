@@ -9,13 +9,15 @@ Parameters:
   PrivateSubnet:
     Type: String
 
+  PredictionBucketName:
+    Type: String
 
 Resources:
   PredictionBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Delete
     Properties:
-      BucketName: !Sub ml-prediction-bucket-${AWS::StackName}
+      BucketName: !Ref PredictionBucketName
       LifecycleConfiguration:
         Rules:
           - Id: YearlyDeletionRule
@@ -65,5 +67,3 @@ Outputs:
   AccessPointResourceArn:
     Description: The access point arn
     Value: !GetAtt AccessPointResource.Arn
-  PredictionBucket:
-    Value: !Ref PredictionBucket
