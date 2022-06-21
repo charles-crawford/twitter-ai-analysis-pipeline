@@ -1,4 +1,4 @@
-# ml-stream-pipeline
+# twitter-ai-analysis-pipeline
 ### Description
 With this repo you can build a social media analysis application with Athena and Quicksight. 
 Once set the stack is created, tweets will stream in from the Twitter API. Then  the tweets
