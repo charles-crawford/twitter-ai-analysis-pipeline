@@ -1,0 +1,177 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+
+
+Parameters:
+  IngestionRepoName:
+    Type: String
+
+  SentimentInferenceRepoName:
+    Type: String
+
+  NerInferenceRepoName:
+    Type: String
+
+  KinesisStreamArn:
+    Type: String
+
+  SecurityGroup:
+    Type: String
+
+  PrivateSubnet:
+    Type: String
+
+  AccessPointResourceArn:
+    Type: String
+
+Resources:
+  InferenceLambdaAccessRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kinesis:DescribeStream
+                  - kinesis:DescribeStreamSummary
+                  - kinesis:GetRecords
+                  - kinesis:GetShardIterator
+                  - kinesis:ListShards
+                  - kinesis:ListStreams
+                  - kinesis:SubscribeToShard
+                  - s3:PutObject
+                  - s3:ListBucket
+                  - s3:PutObjectAcl
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - logs:DescribeLogStreams
+                  - elasticfilesystem:ClientMount
+                  - elasticfilesystem:ClientWrite
+                  - ec2:*
+                  - cloudwatch:*
+                Resource: '*'
+
+  IngestionLambdaAccessRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                  - kinesis:DescribeStream
+                  - kinesis:DescribeStreamSummary
+                  - kinesis:PutRecord
+                  - kinesis:GetShardIterator
+                  - kinesis:ListShards
+                  - kinesis:ListStreams
+                  - kinesis:SubscribeToShard
+                  - sts:GetServiceBearerToken
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - logs:DescribeLogStreams
+                  - s3:PutObject
+                  - s3:ListBucket
+                  - s3:PutObjectAcl
+                  - cloudwatch:*
+                Resource: '*'
+
+  DataIngestionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub twitter-ingestion-${AWS::StackName}
+      ImageUri: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${IngestionRepoName}:latest
+      MemorySize: 128
+      PackageType: Image
+      Role: !GetAtt IngestionLambdaAccessRole.Arn
+      Timeout: 20
+      Events:
+        ScheduleEvent:
+          Type: Schedule
+          Properties:
+            Schedule: rate(15 minutes)
+            Name: !Sub IngestionSchedule-${AWS::StackName}
+            Description: the schedule for the data ingestion process
+
+  SentimentInferenceFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub sentiment-inference-${AWS::StackName}
+      ImageUri: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${SentimentInferenceRepoName}:latest
+      PackageType: Image
+      MemorySize: 8096
+      Role: !GetAtt InferenceLambdaAccessRole.Arn
+      Timeout: 600
+      FileSystemConfigs:
+        - Arn: !Ref AccessPointResourceArn
+          LocalMountPath: '/mnt/model-cache'
+      Environment:
+        Variables:
+          TRANSFORMERS_CACHE: '/mnt/model-cache'
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref SecurityGroup
+        SubnetIds:
+          - !Ref PrivateSubnet
+      Events:
+        KinesisEvent:
+          Type: Kinesis
+          Properties:
+            Stream: !Ref KinesisStreamArn
+            StartingPosition: TRIM_HORIZON
+            BatchSize: 1
+
+  NerInferenceFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ner-inference-${AWS::StackName}
+      ImageUri: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${NerInferenceRepoName}:latest
+      PackageType: Image
+      MemorySize: 8096
+      Role: !GetAtt InferenceLambdaAccessRole.Arn
+      Timeout: 600
+      FileSystemConfigs:
+        - Arn: !Ref AccessPointResourceArn
+          LocalMountPath: '/mnt/model-cache'
+      Environment:
+        Variables:
+          TRANSFORMERS_CACHE: '/mnt/model-cache'
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref SecurityGroup
+        SubnetIds:
+          - !Ref PrivateSubnet
+      Events:
+        KinesisEvent:
+          Type: Kinesis
+          Properties:
+            Stream: !Ref KinesisStreamArn
+            StartingPosition: TRIM_HORIZON
+            BatchSize: 1

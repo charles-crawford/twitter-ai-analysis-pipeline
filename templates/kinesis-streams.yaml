@@ -1,0 +1,20 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+
+Parameters:
+  IngestStreamShardCount:
+    Type: Number
+
+Resources:
+  KinesisInputStream:
+    Type: AWS::Kinesis::Stream
+    Properties:
+      Name: data-ingest-stream
+      RetentionPeriodHours: 24
+      ShardCount: !Ref IngestStreamShardCount
+
+Outputs:
+  KinesisStreamArn:
+    Description: The Kinesis stream arn
+    Value: !GetAtt KinesisInputStream.Arn

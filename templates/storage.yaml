@@ -1,0 +1,69 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+
+Parameters:
+  SecurityGroup:
+    Type: String
+
+  PrivateSubnet:
+    Type: String
+
+
+Resources:
+  PredictionBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      BucketName: ml-prediction-bucket-e07adba6-ae1c-43e4-8148-4ead73d60834
+      LifecycleConfiguration:
+        Rules:
+          - Id: YearlyDeletionRule
+            Status: Enabled
+            ExpirationInDays: 365
+
+  MountTarget:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref ModelStorage
+      SubnetId: !Ref PrivateSubnet
+      SecurityGroups:
+        - !Ref SecurityGroup
+
+  ModelStorage:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      AvailabilityZoneName: us-east-2a
+      FileSystemPolicy:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - elasticfilesystem:*
+              - lambda:*
+              - ec2:*
+            Principal:
+              AWS: "*"
+
+  AccessPointResource:
+    Type: AWS::EFS::AccessPoint
+    Properties:
+      FileSystemId: !Ref ModelStorage
+      PosixUser:
+        Uid: 1001
+        Gid: 1001
+      RootDirectory:
+        CreationInfo:
+          OwnerGid: 1001
+          OwnerUid: 1001
+          Permissions: 750
+        Path: '/model-cache'
+
+Outputs:
+  MountTarget:
+    Value: !Ref MountTarget
+  AccessPointResourceArn:
+    Description: The access point arn
+    Value: !GetAtt AccessPointResource.Arn
+  PredictionBucket:
+    Value: !Ref PredictionBucket

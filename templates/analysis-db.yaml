@@ -1,0 +1,122 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+
+
+Parameters:
+  PredictionBucket:
+    Type: String
+
+Resources:
+  SocialMediaGlueDB:
+    Type: AWS::Glue::Database
+    Properties:
+      DatabaseInput:
+        Name: social_media_dashboard_database
+      CatalogId: !Ref AWS::AccountId
+
+  tweetsentiment:
+    Type: AWS::Glue::Table
+    DependsOn: SocialMediaGlueDB
+    Properties:
+      TableInput:
+        Name: tweet_sentiments
+        TableType: EXTERNAL_TABLE
+        StorageDescriptor:
+          Compressed: False
+          InputFormat: org.apache.hadoop.mapred.TextInputFormat
+          NumberOfBuckets: -1
+          OutputFormat: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+          Location: !Join ['', ['s3://', !Ref PredictionBucket, /sentiment/]]
+          SerdeInfo:
+            SerializationLibrary: org.openx.data.jsonserde.JsonSerDe
+          Columns:
+          - Name: id_str
+            Type: string
+          - Name: negative
+            Type: double
+          - Name: neutral
+            Type: double
+          - Name: positive
+            Type: double
+          - Name: confidence
+            Type: double
+          - Name: sentiment
+            Type: string
+        Parameters: {'classification': 'json'}
+      DatabaseName: !Ref SocialMediaGlueDB
+      CatalogId: !Ref AWS::AccountId
+
+  tweetentities:
+    Type: AWS::Glue::Table
+    DependsOn: SocialMediaGlueDB
+    Properties:
+      TableInput:
+        Name: tweet_entities
+        TableType: EXTERNAL_TABLE
+        StorageDescriptor:
+          Compressed: False
+          InputFormat: org.apache.hadoop.mapred.TextInputFormat
+          NumberOfBuckets: -1
+          OutputFormat: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+          Location: !Join ['', ['s3://', !Ref PredictionBucket, /ner/]]
+          SerdeInfo:
+            SerializationLibrary: org.openx.data.jsonserde.JsonSerDe
+          Columns:
+          - Name: id_str
+            Type: string
+          - Name: value
+            Type: string
+          - Name: score
+            Type: double
+          - Name: entity
+            Type: string
+        Parameters: {'classification': 'json'}
+      DatabaseName: !Ref SocialMediaGlueDB
+      CatalogId: !Ref AWS::AccountId
+
+  tweets:
+    Type: AWS::Glue::Table
+    DependsOn: SocialMediaGlueDB
+    Properties:
+      TableInput:
+        Name: tweets
+        TableType: EXTERNAL_TABLE
+        StorageDescriptor:
+          Compressed: False
+          InputFormat: org.apache.hadoop.mapred.TextInputFormat
+          NumberOfBuckets: -1
+          OutputFormat: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+          Location: !Join ['', ['s3://', !Ref PredictionBucket, /tweets/]]
+          SerdeInfo:
+            SerializationLibrary: org.openx.data.jsonserde.JsonSerDe
+          Columns:
+          - Name: id_str
+            Type: string
+          - Name: created_at
+            Type: string
+          - Name: text
+            Type: string
+          - Name: location
+            Type: string
+          - Name: user
+            Type: string
+          - Name: mentions
+            Type: array<string>
+          - Name: geo
+            Type: struct<type:string,coordinates:array<double>>
+          - Name: day
+            Type: smallint
+          - Name: month
+            Type: smallint
+          - Name: year
+            Type: smallint
+          - Name: followers_count
+            Type: bigint
+          - Name: favorite_count
+            Type: bigint
+          - Name: retweet_count
+            Type: bigint
+        Parameters: {'classification': 'json'}
+      DatabaseName: !Ref SocialMediaGlueDB
+      CatalogId: !Ref AWS::AccountId

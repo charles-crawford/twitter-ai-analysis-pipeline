@@ -1,0 +1,98 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+
+Description: >
+  This repo builds a pipeline. The resources flow is listed below:
+    - Lambda: get tweets from a Twitter query
+    - Kinesis Stream: where tweets are sent for consumption
+    - Lambda: makes predictions based on 2 supplied models, Sentiment and Name Entity Recognition
+    - S3: receives predictions
+
+Parameters:
+  TwitterConsumerKey:
+    Type: String
+
+  TwitterConsumerSecret:
+    Type: String
+
+  TwitterAccessToken:
+    Type: String
+
+  TwitterAccessTokenSecret:
+    Type: String
+
+  IngestStreamShardCount:
+    Type: Number
+    Default: 1
+
+  TemplateBucket:
+    Type: String
+    Default: ml-streaming-pipeline
+    Description: >
+      The S3 bucket from which Cloudformation will fetch the templates used by this stack. This needs to be the
+      same bucket name you used to send the templates to S3. This will also hold the Lambda code and
+      where the predictions will be sent.
+
+  IngestionRepoName:
+    Type: String
+    Default: twitter-ingestion-stream
+
+  SentimentInferenceRepoName:
+    Type: String
+    Default: twitter-roberta-sentiment
+
+  NerInferenceRepoName:
+    Type: String
+    Default: ner-inference
+
+Resources:
+  AnalysisDb:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "https://s3.amazonaws.com/${TemplateBucket}/templates/analysis-db.yaml"
+      Parameters:
+        PredictionBucket: !GetAtt Storage.Outputs.PredictionBucket
+
+  SecretsManager:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "https://s3.amazonaws.com/${TemplateBucket}/templates/secrets-manager.yaml"
+      Parameters:
+        TwitterConsumerKey: !Ref TwitterConsumerKey
+        TwitterConsumerSecret: !Ref TwitterConsumerSecret
+        TwitterAccessToken: !Ref TwitterAccessToken
+        TwitterAccessTokenSecret: !Ref TwitterAccessTokenSecret
+
+  Kinesis:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "https://s3.amazonaws.com/${TemplateBucket}/templates/kinesis-streams.yaml"
+      Parameters:
+        IngestStreamShardCount: !Ref IngestStreamShardCount
+
+  Lambda:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "https://s3.amazonaws.com/${TemplateBucket}/templates/lambda-resources.yaml"
+      Parameters:
+        IngestionRepoName: !Ref IngestionRepoName
+        SentimentInferenceRepoName: !Ref SentimentInferenceRepoName
+        NerInferenceRepoName: !Ref NerInferenceRepoName
+        KinesisStreamArn: !GetAtt Kinesis.Outputs.KinesisStreamArn
+        AccessPointResourceArn: !GetAtt Storage.Outputs.AccessPointResourceArn
+        SecurityGroup: !GetAtt VPC.Outputs.SecurityGroup
+        PrivateSubnet: !GetAtt VPC.Outputs.PrivateSubnet
+
+  VPC:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "https://s3.amazonaws.com/${TemplateBucket}/templates/vpc.yaml"
+
+  Storage:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "https://s3.amazonaws.com/${TemplateBucket}/templates/storage.yaml"
+      Parameters:
+        SecurityGroup: !GetAtt VPC.Outputs.SecurityGroup
+        PrivateSubnet: !GetAtt VPC.Outputs.PrivateSubnet
