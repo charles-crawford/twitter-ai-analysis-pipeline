@@ -15,7 +15,7 @@ Resources:
     Type: AWS::S3::Bucket
     DeletionPolicy: Delete
     Properties:
-      BucketName: ml-prediction-bucket-e07adba6-ae1c-43e4-8148-4ead73d60834
+      BucketName: !Sub ml-prediction-bucket-${AWS::StackName}
       LifecycleConfiguration:
         Rules:
           - Id: YearlyDeletionRule
