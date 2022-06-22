@@ -1,5 +1,6 @@
 # twitter-ai-analysis-pipeline
 ### Description
+
 With this repo you can build a social media analysis application with Athena and Quicksight. 
 Once set the stack is created, tweets will stream in from the Twitter API. Then  the tweets
 are sent to deep learning models for entity extraction and sentiment inference. Lambda execution speed is enhanced
@@ -15,6 +16,7 @@ You will need to set up a developer account and get access keys to the API.
 [Here is where to get started.](https://developer.twitter.com/en/docs/twitter-api/getting-started/about-twitter-api)
 
 #### Ingestion image set up
+
 The Lambda function for ingestion runs every 15 minutes. To keep costs down it
 streams for 5 minutes and is configured to timeout after that. You can change this by
 changing the time_limit parameter in the TwitterStreamListener class. 
@@ -24,11 +26,15 @@ the tracking terms to something you'd like to track.
 
 
 #### Push the images to ECR 
+
 You'll need to build and push the images to ECR for the Lambda functions to be deployed. 
 Do this by changing directory to one of the directories in `serverless-functions`. Then
 run the following:
+- In `serverless-functions/stream-lambda` run `./../aws-ecr-push.sh twitter-ingestion-stream`
 
-`./../aws-ecr-push.sh <ecr-repo-name>`
+- In `serverless-functions/sentiment` run `./../aws-ecr-push.sh twitter-roberta-sentiment`
+
+- In `serverless-functions/name-entity-recognition` run `./../aws-ecr-push.sh ner-inference`
 
 There are corresponding template Parameters in `ml-streaming-pipeline.yaml` for each repo name. 
 Make sure these Parameters match up with the repo names you use when pushing the repos to ECR.
@@ -43,3 +49,15 @@ will be able to get then when deploying the Stacks. From the base directory run:
 After those files have been delivered to your bucket, go to CloudFormation console in your AWS account. 
 Use the parent template, named `ml-streaming-pipeline.yaml` in this repo to build the stacks. Check your 
 Parameter values and proceed on to deploy the Stack. 
+
+---
+### QuickSight Visualizations
+To set up an Analysis in QuickSight, you'll have to do some manual steps. 
+1. open QuickSight
+2. click on your user tab n the top right hand of the screen
+   1. switch to us-east-1
+   2. click Manage QuickSight
+   3. click on Security & permissions
+   4. allow access to the S3 PredictionBucket created in the template. 
+
+-- TODO add screenshots
