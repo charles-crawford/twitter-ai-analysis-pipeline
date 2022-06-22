@@ -2,13 +2,9 @@ import boto3
 import json
 import re
 import time
-import os
-import sys
 
 from os.path import join
 from datetime import datetime as dt
-from tweepy import OAuthHandler
-from tweepy import API
 from tweepy import Stream
 
 kinesis = boto3.client('kinesis')
@@ -19,15 +15,6 @@ CONSUMER_KEY = secrets_manager.get_secret_value(SecretId='TwitterConsumerKey')['
 CONSUMER_SECRET = secrets_manager.get_secret_value(SecretId='TwitterConsumerSecret')['SecretString']
 ACCESS_TOKEN = secrets_manager.get_secret_value(SecretId='TwitterAccessToken')['SecretString']
 ACCESS_TOKEN_SECRET = secrets_manager.get_secret_value(SecretId='TwitterAccessTokenSecret')['SecretString']
-#
-# CONSUMER_KEY = os.environ['CONSUMER_KEY']
-# CONSUMER_SECRET = os.environ['CONSUMER_SECRET']
-# ACCESS_TOKEN = os.environ['ACCESS_TOKEN']
-# ACCESS_TOKEN_SECRET = os.environ['ACCESS_TOKEN_SECRET']
-
-auth = OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
-auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
-api = API(auth, wait_on_rate_limit=True)
 
 
 def clean(raw):

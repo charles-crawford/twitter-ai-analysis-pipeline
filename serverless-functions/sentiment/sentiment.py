@@ -2,14 +2,12 @@ import boto3
 import json
 import base64
 import traceback
+
 from os.path import join
 from transformers import AutoModelForSequenceClassification
-from transformers import TFAutoModelForSequenceClassification
 from transformers import AutoTokenizer, AutoConfig
 import numpy as np
 from scipy.special import softmax
-
-labels = ['negative', 'neutral', 'positive']
 
 
 def handler(event, context):

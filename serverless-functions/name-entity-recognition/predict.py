@@ -3,7 +3,6 @@ import json
 import flair
 import base64
 
-from datetime import datetime as dt
 from os.path import join
 from flair.models import SequenceTagger
 from flair.tokenization import Sentence
