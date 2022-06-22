@@ -28,6 +28,10 @@ the tracking terms to something you'd like to track.
 
 
 #### Push the images to ECR 
+<span style="color:red; font-weight: bold">
+Note: You will need to change the bucket variable in each of the python files to 
+match yours in PredictionBucketName
+</span>
 
 You'll need to build and push the images to ECR for the Lambda functions to be deployed. 
 Do this by changing directory to one of the directories in `serverless-functions`. Then
@@ -40,6 +44,8 @@ run the following:
 
 There are corresponding template Parameters in `ml-streaming-pipeline.yaml` for each repo name. 
 Make sure these Parameters match up with the repo names you use when pushing the repos to ECR.
+
+
 
 ---
 
