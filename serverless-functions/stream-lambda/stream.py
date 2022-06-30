@@ -80,7 +80,7 @@ def process_status(status):
         encoded_data = json.dumps(data).encode('utf-8')
 
         file_key = join('tweets', f'{id_str}.json')
-        bucket = 'ml-prediction-bucket-e07adba6-ae1c-43e4-8148-4ead73d60834'
+        bucket = 'YOUR_BUCKET_NAME'  # PredictionBucketName
         s3.put_object(Body=encoded_data, Bucket=bucket, Key=file_key)
 
         response = kinesis.put_record(

@@ -31,6 +31,10 @@ the tracking terms to something you'd like to track.
 <span style="color:red; font-weight: bold">*Note: You will need to change the bucket variable in each of the python files to 
 match yours in PredictionBucketName.*</span>
 
+1. `serverless-functions/stream-lambda/stream.py`             : line 83
+2. `serverless-functions/sentiment/sentiment.py`              : line 44
+3. `serverless-functions/name-entity-recognition/predict.py`  : line 36
+
 You'll need to build and push the images to ECR for the Lambda functions to be deployed. 
 Do this by changing directory to one of the directories in `serverless-functions`. Then
 run the following:
@@ -79,7 +83,7 @@ Click on Select S3 buckets and allow access to the S3 PredictionBucket created i
 ![qs-0](misc/images/quicksight-3.png)
  
 Then you can go to Athena in the AWS console and run the SQL command supplied in 
-`misc/athena-create-table.txt`.
+`misc/athena-create-table.sql`.
 Finally, follow this tutorial to [Create an Analysis](https://docs.aws.amazon.com/quicksight/latest/user/example-create-an-analysis.html).
 Be sure to select the `social_media_dashboard_database` database created by the stack. 
 Then select the tweets_sentiments_entities table created in Athena. 

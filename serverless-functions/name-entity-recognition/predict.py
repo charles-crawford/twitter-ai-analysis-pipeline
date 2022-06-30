@@ -33,7 +33,7 @@ def handler(event, context):
             print(encoded_data)
 
             file_key = join('ner', f'{id_str}-{count}.json')
-            bucket = 'ml-prediction-bucket-e07adba6-ae1c-43e4-8148-4ead73d60834'
+            bucket = 'YOUR_BUCKET_NAME'  # PredictionBucketName
             s3.put_object(Body=encoded_data, Bucket=bucket, Key=file_key)
             count += 1
     except Exception as e:

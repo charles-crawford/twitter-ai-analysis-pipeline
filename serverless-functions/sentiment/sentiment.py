@@ -41,7 +41,7 @@ def handler(event, context):
         encoded_data = json.dumps(prediction).encode('utf-8')
         print(encoded_data)
         file_key = join('sentiment', f'{id_str}.json')
-        bucket = 'ml-prediction-bucket-e07adba6-ae1c-43e4-8148-4ead73d60834'
+        bucket = 'YOUR_BUCKET_NAME'  # PredictionBucketName
         s3.put_object(Body=encoded_data, Bucket=bucket, Key=file_key)
 
     except Exception as e:
