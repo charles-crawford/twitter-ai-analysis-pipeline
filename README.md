@@ -82,6 +82,7 @@ Click on Manage</br>
 Click on Select S3 buckets and allow access to the S3 PredictionBucket created in the template</br>
 ![qs-0](misc/images/quicksight-3.png)
  
+Make sure to switch back to the original region you were in when you created the Stack.
 Then you can go to Athena in the AWS console and run the SQL command supplied in 
 `misc/athena-create-table.sql`. In QuickSight, you'll need to create a Dataset before 
 creating an Analysis. Be sure to select the `social_media_dashboard_database` database 
