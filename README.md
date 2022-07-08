@@ -83,8 +83,8 @@ Click on Select S3 buckets and allow access to the S3 PredictionBucket created i
 ![qs-0](misc/images/quicksight-3.png)
  
 Then you can go to Athena in the AWS console and run the SQL command supplied in 
-`misc/athena-create-table.sql`.
+`misc/athena-create-table.sql`. In QuickSight, you'll need to create a Dataset before 
+creating an Analysis. Be sure to select the `social_media_dashboard_database` database 
+created by the stack. Then select the tweets_sentiments_entities table and create the Dataset. 
 Finally, follow this tutorial to [Create an Analysis](https://docs.aws.amazon.com/quicksight/latest/user/example-create-an-analysis.html).
-Be sure to select the `social_media_dashboard_database` database created by the stack. 
-Then select the tweets_sentiments_entities table created in Athena. 
 Now you're able to put together any visualization you see fit.  
