@@ -97,10 +97,7 @@ class TwitterStreamListener(Stream):
     def __init__(self, time_limit=300):
         self.start_time = time.time()
         self.time_limit = time_limit
-        super(TwitterStreamListener, self).__init__(CONSUMER_KEY,
-                                                    CONSUMER_SECRET,
-                                                    ACCESS_TOKEN,
-                                                    ACCESS_TOKEN_SECRET)
+        super().__init__(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
 
     def on_status(self, status):
         elapsed_time = time.time() - self.start_time
